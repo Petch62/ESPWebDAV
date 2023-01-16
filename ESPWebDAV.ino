@@ -7,6 +7,10 @@
 #include "network.h"
 #include "gcode.h"
 #include "sdControl.h"
+#include <ArduinoOTA.h>
+
+#define Hostname      "ESPWebDAV"
+#define Version       "1.0.2"
 
 // LED is connected to GPIO2 on this board
 #define INIT_LED			{pinMode(2, OUTPUT);}
@@ -17,6 +21,7 @@
 void setup() {
 	SERIAL_INIT(115200);
 	INIT_LED;
+ SERIAL_ECHO("Version: ");SERIAL_ECHOLN(Version);
 	blink();
 	
 	sdcontrol.setup();
@@ -39,6 +44,41 @@ void setup() {
     SERIAL_ECHOLN("- M52: Start to connect the wifi");
     SERIAL_ECHOLN("- M53: Check the connection status");
   }
+  ArduinoOTA.setHostname(Hostname);
+     ArduinoOTA.onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH) {
+          type = "sketch";
+      } else { // U_FS
+          type = "filesystem";
+      }
+      // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+      SERIAL_ECHOLN("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+      SERIAL_ECHOLN("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) {
+          SERIAL_ECHOLN("Auth Failed");
+      } else if (error == OTA_BEGIN_ERROR) {
+          SERIAL_ECHOLN("Begin Failed");
+      } else if (error == OTA_CONNECT_ERROR) {
+          SERIAL_ECHOLN("Connect Failed");
+      } else if (error == OTA_RECEIVE_ERROR) {
+          SERIAL_ECHOLN("Receive Failed");
+      } else if (error == OTA_END_ERROR) {
+          SERIAL_ECHOLN("End Failed");
+      }
+  });
+  ArduinoOTA.begin();
+  SERIAL_ECHOLN("Ready");
+  SERIAL_ECHO("IP address: ");
+  SERIAL_ECHOLN(WiFi.localIP());
 }
 
 // ------------------------
@@ -51,6 +91,9 @@ void loop() {
 
   // blink
   statusBlink();
+  
+  // OTA
+  ArduinoOTA.handle();
 }
 
 // ------------------------

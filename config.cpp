@@ -66,9 +66,33 @@ int Config::loadSD() {
         goto FAIL;
       }
     }
+    else if(sKEY == "IP") {
+      SERIAL_ECHOLN("INI file : IP found");
+      if(sValue.length()>0) {
+        memset(data.ip,'\0',WIFI_IP_LEN);
+        sValue.toCharArray(data.ip,WIFI_IP_LEN);
+        step++;
+      }
+      else {
+        rst = -5;
+        goto FAIL;
+      }
+    }    
+    else if(sKEY == "GATE") {
+      SERIAL_ECHOLN("INI file : GATE found");
+      if(sValue.length()>0) {
+        memset(data.gate,'\0',WIFI_GATE_LEN);
+        sValue.toCharArray(data.gate,WIFI_GATE_LEN);
+        step++;
+      }
+      else {
+        rst = -5;
+        goto FAIL;
+      }
+    }     
     else continue; // Bad line
   }
-  if(step != 2) { // We miss ssid or password
+  if(step != 4) { // We miss ssid or password
     //memset(data,) // TODO: do we need to empty the data?
     SERIAL_ECHOLN("Please check your SSDI or PASSWORD in ini file");
     rst = -6;
@@ -123,14 +147,34 @@ void Config::password(char* password) {
   strncpy(data.psw,password,WIFI_PASSWD_LEN);
 }
 
-void Config::save(const char*ssid,const char*password) {
-  if(ssid ==NULL || password==NULL)
+char* Config::ip() {
+  return data.ip;
+}
+
+void Config::ip(char* ip) {
+  if(ip == NULL) return;
+  strncpy(data.ip,ip,WIFI_IP_LEN);
+}
+
+char* Config::gate() {
+  return data.gate;
+}
+
+void Config::gate(char* gate) {
+  if(gate == NULL) return;
+  strncpy(data.gate,gate,WIFI_GATE_LEN);
+}
+
+void Config::save(const char*ssid,const char*password,const char*ip,const char*gate) {
+  if(ssid ==NULL || password==NULL || ip==NULL || gate==NULL)
     return;
 
   EEPROM.begin(EEPROM_SIZE);
   data.flag = 1;
   strncpy(data.ssid, ssid, WIFI_SSID_LEN);
   strncpy(data.psw, password, WIFI_PASSWD_LEN);
+  strncpy(data.ip, ip, WIFI_IP_LEN);
+  strncpy(data.gate, gate, WIFI_GATE_LEN);
   uint8_t *p = (uint8_t*)(&data);
   for (int i = 0; i < sizeof(data); i++)
   {
@@ -140,7 +184,7 @@ void Config::save(const char*ssid,const char*password) {
 }
 
 void Config::save() {
-  if(data.ssid == NULL || data.psw == NULL)
+  if(data.ssid == NULL || data.psw == NULL || data.ip == NULL || data.gate == NULL)
     return;
 
   EEPROM.begin(EEPROM_SIZE);
@@ -170,7 +214,7 @@ int Config::save_ip(const char *ip) {
     sdcontrol.relinquishBusControl();
     return -2;
   }
-
+//SAVE IP FILE
   // Remove the old file
   sdfat.remove("ip.gcode");
 
@@ -186,6 +230,24 @@ int Config::save_ip(const char *ip) {
   strncat(buf,ip,15);
   file.write(buf, 21);
   file.close();
+  /*
+//SAVE VERSION FILE
+  // Remove the old file
+  sdfat.remove("version.gcode");
+
+  file = sdfat.open("version.gcode", FILE_WRITE);
+  if (!file) {
+    SERIAL_ECHOLN("Open version file failed");
+    sdcontrol.relinquishBusControl();
+    return -3;
+  }
+
+  // Get SSID and PASSWORD from file
+  char buff[21] = "M117 ";
+  strncat(buff,Version,15);
+  file.write(buff, 21);
+  file.close();  
+  */
 }
 
 Config config;

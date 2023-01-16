@@ -339,5 +339,3 @@ size_t ESPWebDAV::readBytesWithTimeout(uint8_t *buf, size_t bufSize, size_t numT
 
 	return client.read(buf, bufSize);
 }
-
-

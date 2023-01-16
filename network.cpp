@@ -6,6 +6,11 @@
 #include "ESPWebDAV.h"
 #include "sdControl.h"
 
+IPAddress staticIP(0,0,0,0);
+IPAddress gateway(0,0,0,0);
+IPAddress subnet(255,255,255,0);
+IPAddress nullIp(0,0,0,0);
+
 String IpAddress2String(const IPAddress& ipAddress)
 {
   return String(ipAddress[0]) + String(".") +\
@@ -15,6 +20,17 @@ String IpAddress2String(const IPAddress& ipAddress)
 }
 
 bool Network::start() {
+  staticIP.fromString(config.ip());
+  gateway.fromString(config.gate());
+  
+  SERIAL_ECHO("SSID:");SERIAL_ECHOLN(config.ssid());
+  SERIAL_ECHO("PASS:");SERIAL_ECHOLN(config.password());
+  SERIAL_ECHO(" IP :");SERIAL_ECHOLN(config.ip());
+  SERIAL_ECHO("GATE:");SERIAL_ECHOLN(config.gate());
+  SERIAL_ECHOLN(" ");
+//  SERIAL_ECHO("S IP:");SERIAL_ECHO(staticIP[0]);SERIAL_ECHO(".");SERIAL_ECHO(staticIP[1]);SERIAL_ECHO(".");SERIAL_ECHO(staticIP[2]);SERIAL_ECHO(".");SERIAL_ECHOLN(staticIP[3]);
+//  SERIAL_ECHO("GATE:");SERIAL_ECHO(gateway[0]);SERIAL_ECHO(".");SERIAL_ECHO(gateway[1]);SERIAL_ECHO(".");SERIAL_ECHO(gateway[2]);SERIAL_ECHO(".");SERIAL_ECHOLN(gateway[3]);
+
   wifiConnected = false;
   wifiConnecting = true;
   
@@ -24,6 +40,8 @@ bool Network::start() {
   WiFi.setAutoConnect(false);
   WiFi.mode(WIFI_STA);
   WiFi.setPhyMode(WIFI_PHY_MODE_11N);
+  SERIAL_ECHO("DHCP:");
+  if (staticIP != nullIp) {WiFi.config(staticIP, gateway, subnet);SERIAL_ECHOLN("OFF");} else {SERIAL_ECHOLN("ON");}
   WiFi.begin(config.ssid(), config.password());
 
   // Wait for connection
