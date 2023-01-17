@@ -10,7 +10,7 @@
 #include <ArduinoOTA.h>
 
 #define Hostname      "ESPWebDAV"
-#define Version       "1.0.2"
+#define Version       "1.0.5"
 
 // LED is connected to GPIO2 on this board
 #define INIT_LED			{pinMode(2, OUTPUT);}
@@ -21,7 +21,8 @@
 void setup() {
 	SERIAL_INIT(115200);
 	INIT_LED;
- SERIAL_ECHO("Version: ");SERIAL_ECHOLN(Version);
+  SERIAL_ECHOLN("");SERIAL_ECHO("Version: ");SERIAL_ECHOLN(Version);
+	
 	blink();
 	
 	sdcontrol.setup();
@@ -77,8 +78,9 @@ void setup() {
   });
   ArduinoOTA.begin();
   SERIAL_ECHOLN("Ready");
-  SERIAL_ECHO("IP address: ");
-  SERIAL_ECHOLN(WiFi.localIP());
+//  SERIAL_ECHO("IP address: ");
+//  SERIAL_ECHOLN(WiFi.localIP());
+  
 }
 
 // ------------------------

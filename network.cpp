@@ -41,7 +41,7 @@ bool Network::start() {
   WiFi.mode(WIFI_STA);
   WiFi.setPhyMode(WIFI_PHY_MODE_11N);
   SERIAL_ECHO("DHCP:");
-  if (staticIP != nullIp) {WiFi.config(staticIP, gateway, subnet);SERIAL_ECHOLN("OFF");} else {SERIAL_ECHOLN("ON");}
+  if (staticIP != nullIp) {WiFi.config(staticIP, gateway, subnet, gateway);SERIAL_ECHOLN("OFF");} else {SERIAL_ECHOLN("ON");}
   WiFi.begin(config.ssid(), config.password());
 
   // Wait for connection
@@ -98,6 +98,7 @@ int Network::startDAVServer() {
   
   sdcontrol.relinquishBusControl();
   DBG_PRINTLN("FYSETC WebDAV server started");
+  dav.ntpforceupdate();
   return 0;
 }
 
@@ -136,6 +137,7 @@ void Network::handle() {
 	  dav.handleClient();
 	  sdcontrol.relinquishBusControl();
 	}
+ dav.ntpupdate();
 }
 
 Network network;

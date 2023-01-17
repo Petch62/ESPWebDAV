@@ -8,19 +8,45 @@
 #include <time.h>
 #include "ESPWebDAV.h"
 
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <TimeLib.h>
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "fr.pool.ntp.org", 3600, 3600000);
+
 // define cal constants
 const char *months[]  = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 const char *wdays[]  = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
+// ------------------------
+void dateTime(uint16_t* date, uint16_t* time)
+{
+  unsigned long Dtime = timeClient.getEpochTime();
+  uint16_t Tyear = year(Dtime);
+  uint8_t Tmonth = month(Dtime);
+  uint8_t Tday = day(Dtime);
+  uint8_t Thour = hour(Dtime);
+  uint8_t Tminute = minute(Dtime);
+  uint8_t Tsecond = second(Dtime);
+    
+  *date = FAT_DATE(Tyear, Tmonth, Tday);
+  *time = FAT_TIME(Thour, Tminute, Tsecond);
+}
 
 // ------------------------
 bool ESPWebDAV::init(int chipSelectPin, SPISettings spiSettings, int serverPort) {
 // ------------------------
+  timeClient.begin();
+  timeClient.forceUpdate();
+  
 	// start the wifi server
 	server = new WiFiServer(serverPort);
 	server->begin();
 	
 	// initialize the SD card
+ 
+  SdFile::dateTimeCallback(dateTime);
 	return sd.begin(chipSelectPin, spiSettings);
 }
 
@@ -29,7 +55,17 @@ bool ESPWebDAV::initSD(int chipSelectPin, SPISettings spiSettings) {
 	// initialize the SD card
 	return sd.begin(chipSelectPin, spiSettings);
 }
-
+// ------------------------
+bool ESPWebDAV::ntpupdate(){
+  timeClient.update();
+//  Serial.println(timeClient.getFormattedTime());
+}
+// ------------------------
+bool ESPWebDAV::ntpforceupdate(){
+//  WiFiUDP ntpUDP;
+//  NTPClient timeClient(ntpUDP, "fr.pool.ntp.org", 3600, 60000);
+  timeClient.forceUpdate();
+}
 // ------------------------
 bool ESPWebDAV::startServer() {
 // ------------------------
@@ -273,6 +309,7 @@ void ESPWebDAV::handleProp(ResourceType resource)	{
 // ------------------------
 void ESPWebDAV::sendPropResponse(boolean recursing, FatFile *curFile)	{
 // ------------------------
+//DBG_PRINTLN("Processing RESPONSE");
 	char buf[255];
 	curFile->getName(buf, sizeof(buf));
 
