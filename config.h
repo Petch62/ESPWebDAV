@@ -22,6 +22,7 @@ typedef struct config_type
 
 class Config	{
 public:
+  void VerSion(const char*VERS);
   int loadSD();
 	unsigned char load();
   char* ssid();

@@ -7,6 +7,12 @@
 #include "serial.h"
 #include "sdControl.h"
 
+String VERSION;
+
+void Config::VerSion(const char*VERS){
+  VERSION=VERS;
+//  Serial.println(VERSION);
+}
 int Config::loadSD() {
   SdFat sdfat;
 
@@ -230,7 +236,7 @@ int Config::save_ip(const char *ip) {
   strncat(buf,ip,15);
   file.write(buf, 21);
   file.close();
-  /*
+  
 //SAVE VERSION FILE
   // Remove the old file
   sdfat.remove("version.gcode");
@@ -243,11 +249,11 @@ int Config::save_ip(const char *ip) {
   }
 
   // Get SSID and PASSWORD from file
-  char buff[21] = "M117 ";
-  strncat(buff,Version,15);
-  file.write(buff, 21);
+  char buff[12] = "M117 ";
+  strncat(buff,VERSION.c_str(),8);
+  file.write(buff, 12);
   file.close();  
-  */
+  
 }
 
 Config config;

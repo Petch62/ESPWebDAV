@@ -10,7 +10,7 @@
 #include <ArduinoOTA.h>
 
 #define Hostname      "ESPWebDAV"
-#define Version       "1.0.5"
+#define Version       "1.0.6"
 
 // LED is connected to GPIO2 on this board
 #define INIT_LED			{pinMode(2, OUTPUT);}
@@ -22,6 +22,7 @@ void setup() {
 	SERIAL_INIT(115200);
 	INIT_LED;
   SERIAL_ECHOLN("");SERIAL_ECHO("Version: ");SERIAL_ECHOLN(Version);
+  config.VerSion(Version);
 	
 	blink();
 	
